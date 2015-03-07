@@ -12,15 +12,15 @@ module.exports = Class.create({
 	__construct: function() {
 		// class constructor
 		var argv = null;
-		var args = null;
+		var defaults = null;
 		
 		if (arguments.length == 2) {
 			argv = arguments[0];
-			args = arguments[1];
+			defaults = arguments[1];
 		}
 		else if (arguments.length == 1) {
 			if (util.isArray(arguments[0])) argv = arguments[0];
-			else args = arguments[0];
+			else defaults = arguments[0];
 		}
 		
 		if (!argv) {
@@ -28,12 +28,21 @@ module.exports = Class.create({
 			// skip over first two, as they will be node binary & main script js
 			argv = process.argv.slice(2);
 		}
-		if (!args) args = {};
-		this.parse(argv, args);
+		this.parse(argv);
+		
+		// apply defaults
+		if (defaults) {
+			for (var key in defaults) {
+				if (typeof(this.args[key]) == 'undefined') {
+					this.args[key] = defaults[key];
+				}
+			}
+		}
 	},
 	
 	parse: function(argv, args) {
 		// parse cmdline args (--key value)
+		if (!args) args = {};
 		var lastKey = '';
 		
 		for (var idx = 0, len = argv.length; idx < len; idx++) {
