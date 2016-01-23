@@ -1,9 +1,12 @@
 // Simple command-line argument parser
-// Copyright (c) 2015 Joseph Huckaby
+// Copyright (c) 2015, 2016 Joseph Huckaby
 // Released under the MIT License
 
 var util = require("util");
 var Class = require("pixl-class");
+
+// util.isArray is DEPRECATED??? Nooooooooode!
+var isArray = Array.isArray || util.isArray;
 
 module.exports = Class.create({
 	
@@ -19,7 +22,7 @@ module.exports = Class.create({
 			defaults = arguments[1];
 		}
 		else if (arguments.length == 1) {
-			if (util.isArray(arguments[0])) argv = arguments[0];
+			if (isArray(arguments[0])) argv = arguments[0];
 			else defaults = arguments[0];
 		}
 		
@@ -60,11 +63,16 @@ module.exports = Class.create({
 					else if (arg.match(/^\-?\d+\.\d+$/)) arg = parseFloat(arg);
 				}
 				if (typeof(args[lastKey]) != 'undefined') {
-					if (util.isArray(args[lastKey])) args[lastKey].push( arg );
+					if (isArray(args[lastKey])) args[lastKey].push( arg );
 					else args[lastKey] = [ args[lastKey], arg ];
 				}
 				else args[lastKey] = arg;
 				lastKey = '';
+			}
+			else {
+				// add non-keyed args to 'other'
+				if (!args.other) args.other = [];
+				args.other.push( arg );
 			}
 		} // foreach arg
 		
