@@ -72,7 +72,8 @@ module.exports = Class.create({
 			else {
 				// add non-keyed args to 'other'
 				if (!args.other) args.other = [];
-				args.other.push( arg );
+				if (isArray(args.other)) args.other.push( arg );
+				else args.other = [ args.other, arg ];
 			}
 		} // foreach arg
 		
