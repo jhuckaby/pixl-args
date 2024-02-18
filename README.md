@@ -1,6 +1,6 @@
 # Overview
 
-This module provides a simple interface to the command-line arguments used to instantiate Node.js scripts.  It parses key/value arguments in the form `--key value --key value`.  Any number of dashes are acceptable.  The library then provides a `get()` method to get individual values, or everything as one object.  Multiple keys with the same name are pushed onto an array.
+This module provides a simple interface to the command-line arguments used to instantiate Node.js scripts.  It parses double-dash key/value arguments in the form `--key value --key value`.  The library then provides a `get()` method to get individual values, or everything as one object.  Multiple keys with the same name are pushed onto an array.  No dependencies.
 
 # Usage
 
@@ -126,19 +126,9 @@ Then calling `get()`, this becomes:
 }
 ```
 
-## Custom Input Args
-
-The class constructor accepts an optional list of arguments to parse, which defaults to [process.argv](https://nodejs.org/docs/latest/api/process.html#processargv), but can be any array you give it.  Example:
-
-```js
-let args = new Args( ["--verbose", "1", "--debug", "0"] );
-```
-
-To combine this with the default arguments feature, pass the list of arguments array first, and the default arguments hash second.
-
 ## Other Args
 
-Any command-line arguments that don't follow the `--key value` pattern, meaning those located before your keyed arguments start, are appended to an `other` array.  Example:
+Any command-line arguments that don't follow the `--key value` pattern, meaning those located before or after your keyed arguments, are appended to an `other` array.  Example:
 
 ```sh
 node your-script.js file1.txt file2.txt --action delete --key value1 --key value2
@@ -161,6 +151,59 @@ Then calling `get()`, this becomes:
 ```
 
 You can place your "other" args at the beginning or at the end of the keyed arguments.  However, for the latter just beware of using a [Valueless Arg](#valueless-args) as the final keyed argument.
+
+## Single Dash Args
+
+Arguments with a single dash are considered to be flags, and are parsed differently.  Each character is considered to be its own separate key, and they cannot be set to a specific value (they are always `true`).  For example:
+
+```sh
+node your-script.js -abc
+```
+
+Then calling `get()`, this becomes:
+
+```json
+{
+	"a": true,
+	"b": true,
+	"c": true
+}
+```
+
+Note that `-abc`, `-a -b -c` and even `--a --b --c` all produce the same result.
+
+## Double-Dash Separator
+
+If a double-dash separator (`--`) is encountered, then named argument processing stops, and anything after the `--` is added onto the `other` array.  Example:
+
+```sh
+node your-script.js --key1 value1 --key2 value2 -- --key3 value3 --key4 value4
+```
+
+Then calling `get()`, this becomes:
+
+```json
+{
+	"key1": "value1",
+	"key2": "value2",
+	"other": [
+		"--key3",
+		"value3",
+		"--key4",
+		"value4"
+	]
+}
+```
+
+## Custom Input Args
+
+The class constructor accepts an optional list of arguments to parse, which defaults to [process.argv](https://nodejs.org/docs/latest/api/process.html#processargv), but can be any array you give it.  Example:
+
+```js
+let args = new Args( ["--verbose", "1", "--debug", "0"] );
+```
+
+To combine this with the default arguments feature, pass the list of arguments array first, and the default arguments hash second.
 
 # License
 

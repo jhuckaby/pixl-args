@@ -1,28 +1,20 @@
 // Simple command-line argument parser
-// Copyright (c) 2015, 2016 Joseph Huckaby
+// Copyright (c) 2015 - 2024 Joseph Huckaby
 // Released under the MIT License
 
-var util = require("util");
-var Class = require("pixl-class");
-
-// util.isArray is DEPRECATED??? Nooooooooode!
-var isArray = Array.isArray || util.isArray;
-
-module.exports = Class.create({
+module.exports = class Args {
 	
-	args: null,
-	
-	__construct: function() {
+	constructor() {
 		// class constructor
-		var argv = null;
-		var defaults = null;
+		let argv = null;
+		let defaults = null;
 		
 		if (arguments.length == 2) {
 			argv = arguments[0];
 			defaults = arguments[1];
 		}
 		else if (arguments.length == 1) {
-			if (isArray(arguments[0])) argv = arguments[0];
+			if (Array.isArray(arguments[0])) argv = arguments[0];
 			else defaults = arguments[0];
 		}
 		
@@ -35,23 +27,36 @@ module.exports = Class.create({
 		
 		// apply defaults
 		if (defaults) {
-			for (var key in defaults) {
+			for (let key in defaults) {
 				if (typeof(this.args[key]) == 'undefined') {
 					this.args[key] = defaults[key];
 				}
 			}
 		}
-	},
+	}
 	
-	parse: function(argv, args) {
+	parse(argv, args) {
 		// parse cmdline args (--key value)
 		if (!args) args = {};
-		var lastKey = '';
+		let lastKey = '';
+		let endMark = false;
 		
-		for (var idx = 0, len = argv.length; idx < len; idx++) {
-			var arg = argv[idx];
-			if (arg.match(/^\-+(.+)$/)) {
-				// -key or --key
+		for (let idx = 0, len = argv.length; idx < len; idx++) {
+			let arg = argv[idx];
+			
+			if (!endMark && arg.match(/^\-\-$/)) {
+				// stop processing
+				endMark = true;
+				lastKey = '';
+			}
+			else if (!endMark && arg.match(/^\-(\w+)$/)) {
+				// single dash, each char is an arg
+				let chars = RegExp.$1;
+				chars.split('').forEach( function(ch) { args[ch] = true; } );
+				lastKey = '';
+			}
+			else if (!endMark && arg.match(/^\-+(.+)$/)) {
+				// multi-dash, parse as --key
 				if (lastKey) args[lastKey] = true;
 				arg = RegExp.$1.trim();
 				lastKey = arg;
@@ -63,7 +68,7 @@ module.exports = Class.create({
 					else if (arg.match(/^\-?\d+\.\d+$/)) arg = parseFloat(arg);
 				}
 				if (typeof(args[lastKey]) != 'undefined') {
-					if (isArray(args[lastKey])) args[lastKey].push( arg );
+					if (Array.isArray(args[lastKey])) args[lastKey].push( arg );
 					else args[lastKey] = [ args[lastKey], arg ];
 				}
 				else args[lastKey] = arg;
@@ -72,21 +77,21 @@ module.exports = Class.create({
 			else {
 				// add non-keyed args to 'other'
 				if (!args.other) args.other = [];
-				if (isArray(args.other)) args.other.push( arg );
+				if (Array.isArray(args.other)) args.other.push( arg );
 				else args.other = [ args.other, arg ];
 			}
 		} // foreach arg
 		
 		if (lastKey) args[lastKey] = true;
 		this.args = args;
-	},
+	}
 	
-	get: function(key) {
+	get(key) {
 		return key ? this.args[key] : this.args;
-	},
+	}
 	
-	set: function(key, value) {
+	set(key, value) {
 		this.args[key] = value;
 	}
 	
-});
+}
