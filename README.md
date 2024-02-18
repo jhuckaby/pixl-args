@@ -152,26 +152,6 @@ Then calling `get()`, this becomes:
 
 You can place your "other" args at the beginning or at the end of the keyed arguments.  However, for the latter just beware of using a [Valueless Arg](#valueless-args) as the final keyed argument.
 
-## Single Dash Args
-
-Arguments with a single dash are considered to be flags, and are parsed differently.  Each character is considered to be its own separate key, and they cannot be set to a specific value (they are always `true`).  For example:
-
-```sh
-node your-script.js -abc
-```
-
-Then calling `get()`, this becomes:
-
-```json
-{
-	"a": true,
-	"b": true,
-	"c": true
-}
-```
-
-Note that `-abc`, `-a -b -c` and even `--a --b --c` all produce the same result.
-
 ## Double-Dash Separator
 
 If a double-dash separator (`--`) is encountered, then named argument processing stops, and anything after the `--` is added onto the `other` array.  Example:

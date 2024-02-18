@@ -49,12 +49,6 @@ module.exports = class Args {
 				endMark = true;
 				lastKey = '';
 			}
-			else if (!endMark && arg.match(/^\-(\w+)$/)) {
-				// single dash, each char is an arg
-				let chars = RegExp.$1;
-				chars.split('').forEach( function(ch) { args[ch] = true; } );
-				lastKey = '';
-			}
 			else if (!endMark && arg.match(/^\-+(.+)$/)) {
 				// multi-dash, parse as --key
 				if (lastKey) args[lastKey] = true;
